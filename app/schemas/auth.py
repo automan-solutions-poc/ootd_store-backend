@@ -12,6 +12,9 @@ class Login(BaseModel):
     email: str
     password: str
 
-class PasswordReset(BaseModel):
+class PasswordResetRequest(BaseModel):
     email: str
+
+class PasswordReset(BaseModel):
+    token: str
     new_password: str

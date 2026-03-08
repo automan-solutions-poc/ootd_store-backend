@@ -1,10 +1,11 @@
+from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy import select, update, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.models import Product
 from app.schemas.product import ProductCreate, ProductUpdate
-from app.utils.exceptions import NotFoundException
+from app.utils.exceptions import NotFoundException, BadRequestException
 
 class ProductService:
     @staticmethod
@@ -43,16 +44,50 @@ class ProductService:
 
     @staticmethod
     async def delete_product(db: AsyncSession, product_id: UUID):
+        # Soft delete logic
         db_product = await ProductService.get_product(db, product_id)
-        await db.delete(db_product)
+        db_product.is_active = False
         await db.commit()
         return db_product
 
     @staticmethod
-    async def bulk_update_pricing(db: AsyncSession, percentage_change: float):
-        # Bonus: Bulk update pricing
+    async def bulk_update_pricing(db: AsyncSession, percentage_change: float, admin_id: UUID):
+        # Safety range check
+        if not (-50 <= percentage_change <= 50):
+            raise BadRequestException("percentage_change must be between -50 and 50")
+
+        # 1) Calculate old average price
+        avg_old_res = await db.execute(select(func.avg(Product.price)))
+        old_avg = avg_old_res.scalar() or 0.0
+
+        # 2) Perform update in transaction
         factor = 1 + (percentage_change / 100)
         await db.execute(
             update(Product).values(price=Product.price * factor)
         )
         await db.commit()
+
+        # 3) Calculate new average price
+        avg_new_res = await db.execute(select(func.avg(Product.price)))
+        new_avg = avg_new_res.scalar() or 0.0
+
+        # 4) Log action
+        from app.core.logging import logger
+        logger.info(
+            "bulk_pricing_updated",
+            admin_id=str(admin_id),
+            percentage_change=percentage_change,
+            timestamp=datetime.now(timezone.utc).isoformat()
+        )
+
+        # 5) Return stats
+        # Counting updated products is tricky with bulk update result in some DBs,
+        # but we can get it from rowcount if supported
+        res = await db.execute(select(func.count(Product.id)))
+        count = res.scalar() or 0
+
+        return {
+            "number_of_products_updated": count,
+            "old_average_price": float(old_avg),
+            "new_average_price": float(new_avg)
+        }

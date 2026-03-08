@@ -9,7 +9,6 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
-    role: UserRole = UserRole.CUSTOMER
 
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
