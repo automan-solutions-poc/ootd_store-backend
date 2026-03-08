@@ -2,7 +2,7 @@ from typing import List, Optional
 from uuid import UUID
 from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.models import User, Order, OrderItem, Product, UserRole
+from app.models.models import User, Order, OrderItem, Product, UserRole, OrderStatus
 from app.schemas.user import UserUpdate
 from app.utils.exceptions import NotFoundException
 
@@ -68,9 +68,10 @@ class AdminService:
 
     @staticmethod
     async def get_revenue_by_date(db: AsyncSession, start_date: str, end_date: str):
-        # simplified date range query
+        # simplified date range query (Logic fix: only confirmed orders)
         result = await db.execute(
             select(func.date(Order.created_at).label("date"), func.sum(Order.total_amount))
+            .where(Order.status == OrderStatus.CONFIRMED)
             .where(Order.created_at >= start_date)
             .where(Order.created_at <= end_date)
             .group_by(func.date(Order.created_at))
