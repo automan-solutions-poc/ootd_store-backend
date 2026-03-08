@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 import time
+import os
 
 from app.core.config import settings
 from app.core.logging import setup_logging, logger
@@ -15,12 +16,38 @@ from app.api.v1.customer.orders import router as customer_orders_router
 from app.utils.exceptions import AppException
 from fastapi.responses import JSONResponse
 
+from contextlib import asynccontextmanager
+from app.db.session import SessionLocal
+from app.models.models import User, UserRole
+from app.core.security import get_password_hash
+from sqlalchemy import select
+
 setup_logging()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Bootstrap Admin
+    admin_email = os.getenv("ADMIN_EMAIL", "admin@example.com")
+    admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
+
+    async with SessionLocal() as db:
+        result = await db.execute(select(User).where(User.email == admin_email))
+        if not result.scalar_one_or_none():
+            admin_user = User(
+                email=admin_email,
+                password_hash=get_password_hash(admin_password),
+                role=UserRole.ADMIN
+            )
+            db.add(admin_user)
+            await db.commit()
+            logger.info("admin_bootstrapped", email=admin_email)
+    yield
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan
 )
 
 # CORS

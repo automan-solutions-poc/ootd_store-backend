@@ -51,6 +51,15 @@ CREATE TABLE order_items (
     quantity INTEGER NOT NULL,
     price NUMERIC(10, 2) NOT NULL
 );
+
+CREATE TABLE password_reset_tokens (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_reset_token_hash ON password_reset_tokens(token_hash);
 ```
 
 ### 4. Create Indexes

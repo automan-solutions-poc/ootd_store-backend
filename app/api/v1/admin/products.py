@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
-from app.api.deps import admin_required
+from app.api.deps import admin_required, get_current_user
 from app.schemas.product import ProductOut, ProductCreate, ProductUpdate
 from app.services.product_service import ProductService
 
@@ -35,6 +35,10 @@ async def delete_product(product_id: UUID, db: AsyncSession = Depends(get_db)):
     return {"message": "Product deleted"}
 
 @router.post("/bulk-update-pricing")
-async def bulk_update_pricing(percentage_change: float, db: AsyncSession = Depends(get_db)):
-    await ProductService.bulk_update_pricing(db, percentage_change)
-    return {"message": "Pricing updated successfully"}
+async def bulk_update_pricing(
+    percentage_change: float,
+    db: AsyncSession = Depends(get_db),
+    admin=Depends(get_current_user)
+):
+    result = await ProductService.bulk_update_pricing(db, percentage_change, admin.id)
+    return result
