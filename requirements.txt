@@ -11,3 +11,4 @@ python-dotenv
 structlog
 python-multipart
 uvicorn
+httpx
