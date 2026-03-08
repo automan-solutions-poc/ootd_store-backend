@@ -40,7 +40,7 @@ CREATE TABLE orders (
     user_id UUID REFERENCES users(id) NOT NULL,
     total_amount NUMERIC(10, 2) NOT NULL,
     status orderstatus NOT NULL DEFAULT 'PENDING',
-    qikink_order_id VARCHAR(100),
+    fulfillment_id VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

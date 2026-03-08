@@ -7,7 +7,7 @@ Clean, scalable, production-ready FastAPI backend with layered architecture and 
 - Role-Based Access Control (Admin vs Customer)
 - Async SQLAlchemy 2.0 with PostgreSQL
 - JWT Authentication
-- Qikink Integration for Order Fulfillment
+- Internal Fulfillment Service
 - Email System with Background Tasks
 - Structured Logging
 

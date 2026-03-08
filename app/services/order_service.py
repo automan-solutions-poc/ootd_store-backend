@@ -6,7 +6,7 @@ from fastapi import BackgroundTasks
 
 from app.models.models import Order, OrderItem, OrderStatus, User, Product
 from app.schemas.order import OrderCreate
-from app.services.qikink_service import QikinkService
+from app.services.fulfillment_service import FulfillmentService
 from app.services.email_service import EmailService
 from app.utils.exceptions import NotFoundException, BadRequestException
 
@@ -60,16 +60,16 @@ class OrderService:
         await db.commit()
         await db.refresh(db_order)
 
-        # 5) Call Qikink API (outside DB transaction)
-        qikink_order_id = await QikinkService.create_order({
+        # 5) Process fulfillment (outside DB transaction)
+        fulfillment_id = await FulfillmentService.process_fulfillment({
             "external_order_id": str(db_order.id),
             "items": [{"sku": i.sku, "quantity": i.quantity} for i in order_in.items]
         })
 
         # 6) If success → CONFIRMED, 7) If failure → FAILED
-        if qikink_order_id:
+        if fulfillment_id:
             db_order.status = OrderStatus.CONFIRMED
-            db_order.qikink_order_id = qikink_order_id
+            db_order.fulfillment_id = fulfillment_id
             background_tasks.add_task(EmailService.send_order_confirmation, user.email, str(db_order.id))
         else:
             db_order.status = OrderStatus.FAILED

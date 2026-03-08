@@ -32,7 +32,7 @@ class OrderUpdateStatus(BaseModel):
 class OrderOut(OrderBase):
     id: UUID
     user_id: UUID
-    qikink_order_id: Optional[str] = None
+    fulfillment_id: Optional[str] = None
     created_at: datetime
     items: List[OrderItemOut]
 

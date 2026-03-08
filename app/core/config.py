@@ -23,10 +23,6 @@ class Settings(BaseSettings):
     def DATABASE_URL(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
-    # Qikink API
-    QIKINK_API_URL: str = "https://api.qikink.com"
-    QIKINK_API_KEY: Optional[str] = None
-    QIKINK_API_SECRET: Optional[str] = None
 
     # Email
     SMTP_HOST: Optional[str] = None
