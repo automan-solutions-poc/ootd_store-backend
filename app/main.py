@@ -13,6 +13,14 @@ from app.api.v1.admin.users import router as admin_users_router
 from app.api.v1.admin.analytics import router as admin_analytics_router
 from app.api.v1.customer.products import router as customer_products_router
 from app.api.v1.customer.orders import router as customer_orders_router
+from app.api.v1.customer.discovery import router as customer_discovery_router
+from app.api.v1.customer.cart import router as customer_cart_router
+from app.api.v1.customer.engagement import router as customer_engagement_router
+from app.api.v1.customer.wishlist import router as customer_wishlist_router
+from app.api.v1.customer.returns import router as customer_returns_router
+from app.api.v1.customer.promo import router as customer_promo_router
+from app.api.v1.customer.user import router as customer_user_router
+from app.api.v1.admin.management import router as admin_management_router
 from app.utils.exceptions import AppException
 from fastapi.responses import JSONResponse
 
@@ -104,6 +112,16 @@ app.include_router(admin_analytics_router, prefix=f"{settings.API_V1_STR}/admin"
 # Customer
 app.include_router(customer_products_router, prefix=f"{settings.API_V1_STR}/customer", tags=["customer-products"])
 app.include_router(customer_orders_router, prefix=f"{settings.API_V1_STR}/customer", tags=["customer-orders"])
+app.include_router(customer_discovery_router, prefix=f"{settings.API_V1_STR}/customer/discovery", tags=["customer-discovery"])
+app.include_router(customer_cart_router, prefix=f"{settings.API_V1_STR}/customer/cart", tags=["customer-cart"])
+app.include_router(customer_engagement_router, prefix=f"{settings.API_V1_STR}/customer/engagement", tags=["customer-engagement"])
+app.include_router(customer_wishlist_router, prefix=f"{settings.API_V1_STR}/customer/wishlist", tags=["customer-wishlist"])
+app.include_router(customer_returns_router, prefix=f"{settings.API_V1_STR}/customer/returns", tags=["customer-returns"])
+app.include_router(customer_promo_router, prefix=f"{settings.API_V1_STR}/customer/promo", tags=["customer-promo"])
+app.include_router(customer_user_router, prefix=f"{settings.API_V1_STR}/customer/user", tags=["customer-user"])
+
+# Admin
+app.include_router(admin_management_router, prefix=f"{settings.API_V1_STR}/admin/management", tags=["admin-management"])
 
 @app.get("/")
 async def root():

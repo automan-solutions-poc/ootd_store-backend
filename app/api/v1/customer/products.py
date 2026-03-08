@@ -23,8 +23,4 @@ async def get_product(
     product_id: UUID,
     db: AsyncSession = Depends(get_db)
 ):
-    product = await ProductService.get_product(db, product_id)
-    if not product.is_active:
-        from app.utils.exceptions import NotFoundException
-        raise NotFoundException("Product not found")
-    return product
+    return await ProductService.get_product(db, product_id, active_only=True)

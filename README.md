@@ -3,13 +3,24 @@
 Clean, scalable, production-ready FastAPI backend with layered architecture and RBAC.
 
 ## Features
-- Layered Architecture (API -> Service -> DB)
+- Enterprise Layered Architecture (API -> Service -> DB)
 - Role-Based Access Control (Admin vs Customer)
 - Async SQLAlchemy 2.0 with PostgreSQL
-- JWT Authentication
+- JWT Authentication & Session Management
+- Multi-Level Product Categories
+- Product Variants (Sizes, Colors, Stock)
+- Integrated Cart & Wishlist System
+- Review & Rating System
+- Advanced Search, Filtering, and Sorting
+- Promo Code & Discount Engine
+- RMA/Return Management
 - Internal Fulfillment Service
+- Address Management
 - Email System with Background Tasks
-- Structured Logging
+- Webhook Event System
+- Structured Logging & Monitoring
+- Rate Limiting (Conceptual)
+- Fraud Detection & Tax Calculation (Conceptual stubs)
 
 ## Setup
 

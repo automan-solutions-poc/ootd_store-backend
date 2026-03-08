@@ -4,7 +4,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import BackgroundTasks
 
-from app.models.models import Order, OrderItem, OrderStatus, User, Product
+from app.models.models import Order, OrderItem, OrderStatus, User, Product, ProductVariant
 from app.schemas.order import OrderCreate
 from app.services.fulfillment_service import FulfillmentService
 from app.services.email_service import EmailService
@@ -13,31 +13,31 @@ from app.utils.exceptions import NotFoundException, BadRequestException
 class OrderService:
     @staticmethod
     async def create_order(db: AsyncSession, user: User, order_in: OrderCreate, background_tasks: BackgroundTasks):
-        # 1) Fetch products to get verified prices (Security fix: avoid client-controlled pricing)
+        # 1) Fetch variants to get verified prices (Security fix: avoid client-controlled pricing)
         skus = [item.sku for item in order_in.items]
-        result = await db.execute(select(Product).where(Product.sku.in_(skus)))
-        products = {p.sku: p for p in result.scalars().all()}
+        result = await db.execute(select(ProductVariant).where(ProductVariant.sku.in_(skus)))
+        variants = {v.sku: v for v in result.scalars().all()}
 
-        if len(products) != len(set(skus)):
-            missing = set(skus) - set(products.keys())
+        if len(variants) != len(set(skus)):
+            missing = set(skus) - set(variants.keys())
             raise BadRequestException(f"Some products not found: {missing}")
 
         total_amount = 0
         order_items_to_create = []
 
         for item in order_in.items:
-            product = products[item.sku]
-            if not product.is_active:
-                raise BadRequestException(f"Product {product.sku} is not active")
+            variant = variants[item.sku]
+            if not variant.is_active:
+                raise BadRequestException(f"Product variant {variant.sku} is not active")
 
-            item_total = product.price * item.quantity
+            item_total = variant.price * item.quantity
             total_amount += item_total
 
             order_items_to_create.append(
                 OrderItem(
                     sku=item.sku,
                     quantity=item.quantity,
-                    price=product.price
+                    price=variant.price
                 )
             )
 

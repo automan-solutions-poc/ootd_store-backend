@@ -2,9 +2,9 @@ from typing import List, Optional
 from uuid import UUID
 from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.models import User, Order, OrderItem, Product, UserRole, OrderStatus
+from app.models.models import User, Order, OrderItem, Product, ProductVariant, UserRole, OrderStatus
 from app.schemas.user import UserUpdate
-from app.utils.exceptions import NotFoundException
+from app.utils.exceptions import NotFoundException, BadRequestException
 
 class AdminService:
     @staticmethod
@@ -34,7 +34,7 @@ class AdminService:
             select(func.sum(Order.total_amount))
             .where(Order.status == OrderStatus.CONFIRMED)
         )
-        total_revenue = rev_result.scalar() or 0.0
+        total_revenue = float(rev_result.scalar() or 0.0)
 
         # Orders Count
         count_result = await db.execute(select(func.count(Order.id)))
@@ -69,11 +69,18 @@ class AdminService:
     @staticmethod
     async def get_revenue_by_date(db: AsyncSession, start_date: str, end_date: str):
         # simplified date range query (Logic fix: only confirmed orders)
+        from datetime import datetime
+        try:
+            start = datetime.fromisoformat(start_date)
+            end = datetime.fromisoformat(end_date)
+        except ValueError:
+            raise BadRequestException("Invalid date format. Use ISO format.")
+
         result = await db.execute(
             select(func.date(Order.created_at).label("date"), func.sum(Order.total_amount))
             .where(Order.status == OrderStatus.CONFIRMED)
-            .where(Order.created_at >= start_date)
-            .where(Order.created_at <= end_date)
+            .where(Order.created_at >= start)
+            .where(Order.created_at <= end)
             .group_by(func.date(Order.created_at))
             .order_by("date")
         )

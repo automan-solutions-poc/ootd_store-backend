@@ -28,9 +28,7 @@ CREATE TABLE products (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    sku VARCHAR(100) UNIQUE NOT NULL,
-    price NUMERIC(10, 2) NOT NULL,
-    print_type_id VARCHAR(100),
+    category_id UUID REFERENCES categories(id),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -60,6 +58,68 @@ CREATE TABLE password_reset_tokens (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_reset_token_hash ON password_reset_tokens(token_hash);
+
+CREATE TABLE categories (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    parent_id UUID REFERENCES categories(id),
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE product_variants (
+    id UUID PRIMARY KEY,
+    product_id UUID REFERENCES products(id) ON DELETE CASCADE NOT NULL,
+    sku VARCHAR(100) UNIQUE NOT NULL,
+    size VARCHAR(50),
+    color VARCHAR(50),
+    price NUMERIC(10, 2) NOT NULL,
+    stock_quantity INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE carts (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id) UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE cart_items (
+    id UUID PRIMARY KEY,
+    cart_id UUID REFERENCES carts(id) NOT NULL,
+    variant_id UUID REFERENCES product_variants(id) NOT NULL,
+    quantity INTEGER DEFAULT 1
+);
+
+CREATE TABLE addresses (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id) NOT NULL,
+    address_line1 VARCHAR(255) NOT NULL,
+    address_line2 VARCHAR(255),
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    postal_code VARCHAR(20) NOT NULL,
+    is_default_shipping BOOLEAN DEFAULT FALSE,
+    is_default_billing BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE reviews (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id) NOT NULL,
+    product_id UUID REFERENCES products(id) NOT NULL,
+    rating INTEGER NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE promo_codes (
+    id UUID PRIMARY KEY,
+    code VARCHAR(50) UNIQUE NOT NULL,
+    discount_percent NUMERIC(5, 2) NOT NULL,
+    expiry_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE
+);
 ```
 
 ### 4. Create Indexes
