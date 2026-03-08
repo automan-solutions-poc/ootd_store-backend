@@ -50,3 +50,11 @@ class EmailService:
             "Password Reset",
             "Your password has been successfully reset."
         )
+
+    @staticmethod
+    async def send_password_reset_token(email: str, token: str):
+        EmailService.send_email(
+            email,
+            "Password Reset Token",
+            f"Your password reset token is: {token}\nThis token expires in 15 minutes."
+        )

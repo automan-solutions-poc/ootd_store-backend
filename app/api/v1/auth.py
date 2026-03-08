@@ -3,6 +3,7 @@ from venv import logger
 from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
+from app.core.logging import logger
 from app.schemas.auth import Token, Login, PasswordReset, PasswordResetRequest
 from app.schemas.user import UserOut, UserCreate
 from app.services.auth_service import AuthService
@@ -29,7 +30,7 @@ async def request_password_reset(
     # Only send it via background task (e.g., email).
     background_tasks.add_task(EmailService.send_password_reset_token, request_data.email, token)
     # For testing, we can log it on the server side instead.
-    logger.info("password_reset_requested", email=request_data.email, token=token)
+    logger.info("password_reset_requested", email=request_data.email)
     return {"message": "If an account with this email exists, a reset token has been sent."}
 
 @router.post("/reset-password")
