@@ -1,0 +1,13 @@
+fastapi[all]
+sqlalchemy[asyncio]>=2.0.0
+alembic
+asyncpg
+pydantic[email]>=2.0.0
+pydantic-settings
+python-jose[cryptography]
+passlib
+bcrypt==4.0.1
+python-dotenv
+structlog
+python-multipart
+uvicorn
