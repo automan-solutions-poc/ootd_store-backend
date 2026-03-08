@@ -87,4 +87,5 @@ class AuthService:
         # Single-use: delete the token
         await db.delete(token_entry)
         await db.commit()
+        await db.refresh(user)
         return user
