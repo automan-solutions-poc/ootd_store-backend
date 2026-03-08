@@ -1,3 +1,5 @@
+from venv import logger
+
 from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
@@ -25,7 +27,7 @@ async def request_password_reset(
     token = await AuthService.request_password_reset(db, request_data.email)
     # Security fix: Do NOT return the token in the API response.
     # Only send it via background task (e.g., email).
-    # background_tasks.add_task(EmailService.send_password_reset_token, request_data.email, token)
+    background_tasks.add_task(EmailService.send_password_reset_token, request_data.email, token)
     # For testing, we can log it on the server side instead.
     logger.info("password_reset_requested", email=request_data.email, token=token)
     return {"message": "If an account with this email exists, a reset token has been sent."}
